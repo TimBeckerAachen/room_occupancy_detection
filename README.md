@@ -29,6 +29,11 @@ series nature of the data. The models will be evaluated based on their accuracy,
 ## Notebooks
 
 
+## Presentation
+A summary of the results can be found as presentation in pdf format: [presentation](presentation/room_occupancy_prediction.pdf).
+It includes the most important results with reflections and thoughts and provides some ideas concerning the
+deployment of the model in practice.
+
 ## Code structure
 
 ## Remarks
@@ -47,10 +52,10 @@ Moreover, it might not be technically feasible to control the HVAC system based 
 - clean code + docstrings
 - update requirements.txt
 - github page
-- add presentation
 - add images to markdown
 
 ### done
 - explain the task and dataset
 - link to the paper
 - add data
+- add presentation

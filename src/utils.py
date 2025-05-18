@@ -41,7 +41,7 @@ weekends = [
     '2015-02-15',
 ]
 
-
+# no validation dataset excluded and more training data
 cv_splits_large = {
     'first_split': {
         'train_dates': partial_days[:3] + weekends[0:2] + full_days[:4] + full_days[-2:] + weekends[-1:] + partial_days[-1:],
@@ -65,7 +65,7 @@ cv_splits_large = {
     },
 }
 
-
+# validation dataset excluded
 cv_splits_no_val = {
     'first_split': {
         'train_dates': partial_days[:3] + weekends[0:2] + full_days[:4],
@@ -89,7 +89,7 @@ cv_splits_no_val = {
     },
 }
 
-
+# no validation dataset excluded and no partial dates for validation
 cv_splits = {
     'first_split': {
         'train_dates': partial_days + weekends[:3] + full_days[:6],
@@ -114,9 +114,9 @@ cv_splits = {
 }
 
 
-def get_cv_days(cv_splits):
+def get_cv_days(splits: dict) -> list:
     cv_days = []
-    for split_name, split_dict in cv_splits.items():
+    for split_name, split_dict in splits.items():
         train_dates = split_dict['train_dates']
         test_dates = split_dict['val_dates']
         cv_days += train_dates + test_dates
@@ -126,14 +126,14 @@ def get_cv_days(cv_splits):
     return cv_days
 
 
-def get_index_for_days(data_index, list_of_days):
+def get_index_for_days(data_index: pd.DatetimeIndex, list_of_days: list) -> np.ndarray:
     days = pd.to_datetime(list_of_days)
     mask = data_index.floor('D').isin(days)
     indices = np.where(mask)[0]
     return indices
 
 
-def create_time_features(df, feature_columns=None):
+def create_time_features(df: pd.DataFrame, feature_columns: list = None) -> pd.DataFrame:
     """
     Create comprehensive time-based features for building occupancy prediction.
 
@@ -186,13 +186,12 @@ def create_time_features(df, feature_columns=None):
 
         result_df[f'{col}_roc_5min'] = (df[col] - df[col].shift(5)) / 5
 
-    # result_df.fillna(0, inplace=True)
     result_df = result_df.bfill()
 
     return result_df
 
 
-def load_data(file_path):
+def load_data(file_path: str) -> pd.DataFrame:
     df = pd.read_csv(file_path, skiprows=1, names=["Index", "Timestamp", "Temperature", "Humidity", "Light", "CO2",
                                                    "HumidityRatio", "Occupancy"])
 
@@ -208,7 +207,7 @@ def load_data(file_path):
     return df
 
 
-def get_data():
+def get_data() -> tuple:
     current_file_path = os.path.abspath(__file__)
     current_dir = os.path.dirname(current_file_path)
 
@@ -229,7 +228,8 @@ def get_data():
     return df, df_test, df_training, df_test_2
 
 
-def filter_dataset(df, remove_weekends=False, start_time=None, end_time=None):
+def filter_dataset(df: pd.DataFrame, remove_weekends: bool = False,
+                   start_time: str = None, end_time: str = None) -> pd.DataFrame:
     """
     Filter time series data based on weekdays and time ranges.
 
@@ -261,13 +261,13 @@ def filter_dataset(df, remove_weekends=False, start_time=None, end_time=None):
 
 
 def split_dataset_by_dates(
-        df,
-        features,
-        target,
-        train_dates,
-        test_dates,
-        val_dates=None,
-):
+        df: pd.DataFrame,
+        features: list,
+        target: str,
+        train_dates: list,
+        test_dates: list,
+        val_dates: list = None,
+) -> tuple:
     """
     Split time series data into train, test, and validation sets based on date ranges.
 
@@ -318,8 +318,15 @@ def split_dataset_by_dates(
     return X_train, y_train, X_test, y_test, X_val, y_val
 
 
-def evaluate_classification_model(model, X_train, y_train, X_test, y_test, X_val=None, y_val=None,
-                                  feature_names=None, target_name="Occupancy"):
+def evaluate_classification_model(model: Pipeline,
+                                  X_train: pd.DataFrame,
+                                  y_train: pd.DataFrame,
+                                  X_test: pd.DataFrame,
+                                  y_test: pd.DataFrame,
+                                  X_val: pd.DataFrame = None,
+                                  y_val: pd.DataFrame = None,
+                                  feature_names: list = None
+                                  ) -> dict:
     """
     Evaluate classification model performance on train, test, and validation sets.
 
@@ -327,14 +334,12 @@ def evaluate_classification_model(model, X_train, y_train, X_test, y_test, X_val
     -----------
     model : trained model or pipeline
         The trained classification model to evaluate
-    X_train, X_test, X_val : numpy.ndarray
+    X_train, X_test, X_val : pd.DataFrame
         Feature matrices for train, test, and validation sets
-    y_train, y_test, y_val : numpy.ndarray
+    y_train, y_test, y_val : pd.DataFrame
         Target vectors for train, test, and validation sets
     feature_names : list, default None
         Names of the features (columns)
-    target_name : str, default "Occupancy"
-        Name of the target variable
 
     Returns:
     --------
@@ -343,7 +348,7 @@ def evaluate_classification_model(model, X_train, y_train, X_test, y_test, X_val
     """
     results = {}
 
-    def get_metrics(X, y, set_name):
+    def get_metrics(X: pd.DataFrame, y: pd.DataFrame, set_name: str) -> dict:
         y_pred = model.predict(X)
         y_proba = None
         if hasattr(model, "predict_proba"):
@@ -440,11 +445,18 @@ def evaluate_classification_model(model, X_train, y_train, X_test, y_test, X_val
     return results
 
 
-def evaluate_and_visualize_model(model, X_train, y_train, X_test, y_test,
-                                 X_val=None, y_val=None,
-                                 train_idx=None, test_idx=None, val_idx=None,
-                                 features_df=None,
-                                 features_to_plot=None):
+def evaluate_and_visualize_model(model: Pipeline,
+                                 X_train: pd.DataFrame,
+                                 y_train: pd.DataFrame,
+                                 X_test: pd.DataFrame,
+                                 y_test: pd.DataFrame,
+                                 X_val: pd.DataFrame = None,
+                                 y_val: pd.DataFrame = None,
+                                 train_idx: pd.DatetimeIndex = None,
+                                 test_idx: pd.DatetimeIndex = None,
+                                 val_idx: pd.DatetimeIndex = None,
+                                 features_df: pd.DataFrame = None,
+                                 features_to_plot: list = None):
     """
     Complete end-to-end evaluation and visualization of classification model.
 
@@ -452,9 +464,9 @@ def evaluate_and_visualize_model(model, X_train, y_train, X_test, y_test,
     -----------
     model : trained model or pipeline
         The trained classification model to evaluate
-    X_train, X_test, X_val : numpy.ndarray
+    X_train, X_test, X_val : pandas.DataFrame
         Feature matrices for train, test, and validation sets
-    y_train, y_test, y_val : numpy.ndarray
+    y_train, y_test, y_val : pandas.DataFrame
         Target vectors for train, test, and validation sets
     train_idx, test_idx, val_idx : pandas.DatetimeIndex
         Time indices for respective datasets
@@ -469,13 +481,10 @@ def evaluate_and_visualize_model(model, X_train, y_train, X_test, y_test,
         (evaluation_results, train_viz_df, test_viz_df, val_viz_df)
     """
     if hasattr(model, 'steps'):
-        transform_steps = model.steps[1:-2] # exclude the model and scaler steps and log
-        # transform_steps = model.steps[:-1]
+        # exclude the model and scaler steps and log
+        transform_steps = model.steps[1:-2]
         transform_pipeline = Pipeline(transform_steps)
-        # X_train = transform_pipeline.transform(X_train)
-        # X_test = transform_pipeline.transform(X_test)
-        # if isinstance(X_val, pd.DataFrame):
-        #     X_val = transform_pipeline.transform(X_val)
+
         if isinstance(features_df, pd.DataFrame):
             features_df = transform_pipeline.transform(features_df)
 
@@ -542,12 +551,19 @@ def evaluate_and_visualize_model(model, X_train, y_train, X_test, y_test,
     return eval_results, results
 
 
-def optimize_model_with_custom_splits(df, features, target, cv_splitter, pipeline,
-                                      param_distributions,
-                                      n_iter=2,
-                                      n_jobs=-1,
-                                      scoring='f1',
-                                      random_state=42):
+def optimize_model_with_custom_splits(df: pd.DataFrame,
+                                      features: list,
+                                      target: str,
+                                      cv_splitter: object,
+                                      pipeline: Pipeline,
+                                      param_distributions: dict,
+                                      n_iter: int = 2,
+                                      n_jobs: int = -1,
+                                      scoring: str = 'f1',
+                                      random_state=42) -> tuple:
+    """
+    Optimize model using RandomizedSearchCV with custom time series splits.
+    """
     X = df[features]
     y = df[target]
 

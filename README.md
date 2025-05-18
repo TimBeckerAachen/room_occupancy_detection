@@ -45,12 +45,16 @@ While this tasks serves as a nice educational example, in practice a simple moti
 Moreover, it might not be technically feasible to control the HVAC system based on a highly dynamic occupancy prediction.
 
 ### TODO
+- clean exploration notebook
+- add & clean all model notebooks
+
+- update requirements.txt
 - explain how to run the code
+
 - explain files and notebooks
 - explain decisions briefly
 - conclusion in the readme
-- clean code + docstrings
-- update requirements.txt
+
 - github page
 - add images to markdown
 
@@ -59,3 +63,4 @@ Moreover, it might not be technically feasible to control the HVAC system based 
 - link to the paper
 - add data
 - add presentation
+- clean code + docstrings (no comments)

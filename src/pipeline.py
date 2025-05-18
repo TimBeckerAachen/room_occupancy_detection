@@ -61,8 +61,7 @@ class LogTransformer(BaseEstimator, TransformerMixin):
         for col in X.columns:
             if any(c in col for c in self.columns):
                 if (X[col] + self.add_constant <= 0).any():
-                    # raise ValueError(
-                    #     f"Column '{col}' contains values <= -{self.add_constant}, which cannot be log-transformed.")
+                    print(f"Column '{col}' contains values <= -{self.add_constant}, which cannot be log-transformed.")
                     continue
                 X[col] = np.log(X[col] + self.add_constant)
         return X
@@ -179,7 +178,6 @@ class AddHistoricOfficeOccupancyFeature(BaseEstimator, TransformerMixin):
             return X
 
         df = X.copy()
-        is_numpy = False
 
         if isinstance(df, pd.DataFrame) and isinstance(df.index, pd.DatetimeIndex):
             dt_index = df.index

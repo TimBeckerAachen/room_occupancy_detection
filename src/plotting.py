@@ -140,10 +140,11 @@ def plot_daily_results(df: pd.DataFrame,
         plt.show()
 
 
-def plot_param_importances(results: pd.DataFrame) -> None:
+def plot_param_importances(results_cv: dict) -> None:
     """
     Plot parameter importances based on correlation with CV score.
     """
+    results = pd.DataFrame(results_cv)
     param_names = [p for p in results.columns if p.startswith('param_')]
 
     importances = []

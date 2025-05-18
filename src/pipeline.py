@@ -61,7 +61,7 @@ class LogTransformer(BaseEstimator, TransformerMixin):
         for col in X.columns:
             if any(c in col for c in self.columns):
                 if (X[col] + self.add_constant <= 0).any():
-                    print(f"Column '{col}' contains values <= -{self.add_constant}, which cannot be log-transformed.")
+                    # print(f"Column '{col}' contains values <= -{self.add_constant}, which cannot be log-transformed.")
                     continue
                 X[col] = np.log(X[col] + self.add_constant)
         return X
